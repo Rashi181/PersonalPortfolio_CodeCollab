@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import config from "../config";
 
-const GradientBackground = () => {
+const PartcilesBackground = () => {
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
   const animationFrameId = useRef(null);
@@ -220,4 +220,4 @@ const GradientBackground = () => {
   );
 };
 
-export default GradientBackground;
+export default ParticlesBackground;
