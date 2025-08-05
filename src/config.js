@@ -14,7 +14,7 @@ export default {
         abbreviatedName: "YN",
     },
     theme: {
-        backgroundLight: "#f9fafb",
+        backgroundLight: "#119DBD",
         backgroundDark: "#1e293b",
         sectionLight: "#ffffff",
         sectionDark: "#374151",
