@@ -1,11 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import config from "../config";
 
-const ParticlesBackground = () => {
-    const canvasRef = useRef(null);
-    const animationFrameId = useRef(null);
-    const particles = useRef([]);
-    const mouse = useRef({ x: null, y: null, radius: 150 });
+const GradientBackground = () => {
+const containerRef = useRef(null);
 
     const [themeMode, setThemeMode] = useState(() =>
         document.documentElement.classList.contains("dark") ? "dark" : "light"
@@ -41,9 +38,9 @@ const ParticlesBackground = () => {
     const [particleConfig, setParticleConfig] = useState(
         getParticleConfig(themeMode)
     );
-
-    const particleConfigRef = useRef(particleConfig);
-
+    useEffect(() => {
+    const container = containerRef.current;
+    const particlesContainer = container.querySelector("#particles-container");
     useEffect(() => {
         const observer = new MutationObserver(() => {
             const isDark = document.documentElement.classList.contains("dark");
@@ -64,89 +61,101 @@ const ParticlesBackground = () => {
         return () => observer.disconnect();
     }, [themeMode]);
 
-    const initParticles = (width, height) => {
-        particles.current = [];
-        for (let i = 0; i < particleConfigRef.current.particleCount; i++) {
-            particles.current.push({
-                x: Math.random() * width,
-                y: Math.random() * height,
-                vx: (Math.random() - 0.5) * particleConfigRef.current.maxVelocity,
-                vy: (Math.random() - 0.5) * particleConfigRef.current.maxVelocity,
-                radius: particleConfig.particleRadius,
-            });
-        }
-    };
 
-    const draw = (ctx, width, height) => {
-        ctx.clearRect(0, 0, width, height);
+    const particleCount = 80;
 
-        for (let i = 0; i < particles.current.length; i++) {
-            for (let j = i + 1; j < particles.current.length; j++) {
-                const dx = particles.current[i].x - particles.current[j].x;
-                const dy = particles.current[i].y - particles.current[j].y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
+    const particleConfigRef = useRef(particleConfig);
 
-                if (dist < particleConfigRef.current.connectionDistance) {
-                    const alpha = 1 - dist / particleConfigRef.current.connectionDistance;
-                    ctx.strokeStyle =
-                        (themeMode === "dark"
-                            ? "rgba(255, 255, 255," + (alpha * 0.8).toString() + ")"
-                            : "rgba(126, 34, 206," + (alpha * 0.5).toString() + ")");
-                    ctx.lineWidth = 1;
-                    ctx.beginPath();
-                    ctx.moveTo(particles.current[i].x, particles.current[i].y);
-                    ctx.lineTo(particles.current[j].x, particles.current[j].y);
-                    ctx.stroke();
-                }
-            }
-        }
+    
 
-        particles.current.forEach((p) => {
-            ctx.beginPath();
-            ctx.fillStyle = particleConfigRef.current.particleColor;
-            ctx.shadowColor = particleConfigRef.current.shadowColor;
-            ctx.shadowBlur = 5;
-            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-            ctx.fill();
-
-            p.x += p.vx;
-            p.y += p.vy;
-
-            if (p.x <= p.radius || p.x >= width - p.radius) p.vx = -p.vx;
-            if (p.y <= p.radius || p.y >= height - p.radius) p.vy = -p.vy;
-
-            if (mouse.current.x && mouse.current.y) {
-                const dx = p.x - mouse.current.x;
-                const dy = p.y - mouse.current.y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-
-                if (dist < mouse.current.radius) {
-                    const angle = Math.atan2(dy, dx);
-                    const force =
-                        (mouse.current.radius - dist) / mouse.current.radius;
-                    p.vx += Math.cos(angle) * force * 0.3;
-                    p.vy += Math.sin(angle) * force * 0.3;
-
-                    p.vx = Math.min(
-                        Math.max(p.vx, -particleConfigRef.current.maxVelocity * 2),
-                        particleConfigRef.current.maxVelocity * 2
-                    );
-                    p.vy = Math.min(
-                        Math.max(p.vy, -particleConfigRef.current.maxVelocity * 2),
-                        particleConfigRef.current.maxVelocity * 2
-                    );
-                }
-            }
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ["class"],
         });
+
+        return () => observer.disconnect();
+    }, [themeMode]);
+
+    const createParticle = () => {
+      const particle = document.createElement("div");
+      particle.className = "particle";
+
+      const size = Math.random() * 3 + 1;
+      particle.style.width = `${size}px`;
+      particle.style.height = `${size}px`;
+
+      resetParticle(particle);
+      particlesContainer.appendChild(particle);
+
+      animateParticle(particle);
     };
 
-    const animate = (ctx, width, height) => {
-        draw(ctx, width, height);
-        animationFrameId.current = requestAnimationFrame(() =>
-            animate(ctx, width, height)
-        );
+    const resetParticle = (particle) => {
+      const posX = Math.random() * 100;
+      const posY = Math.random() * 100;
+      particle.style.left = `${posX}%`;
+      particle.style.top = `${posY}%`;
+      particle.style.opacity = "0";
+
+      return { x: posX, y: posY };
     };
 
+    const animateParticle = (particle) => {
+      const pos = resetParticle(particle);
+      const duration = Math.random() * 10 + 10;
+      const delay = Math.random() * 5;
+
+      setTimeout(() => {
+        particle.style.transition = `all ${duration}s linear`;
+        particle.style.opacity = Math.random() * 0.3 + 0.1;
+
+        const moveX = pos.x + (Math.random() * 20 - 10);
+        const moveY = pos.y - Math.random() * 30;
+
+        particle.style.left = `${moveX}%`;
+        particle.style.top = `${moveY}%`;
+
+        setTimeout(() => {
+          animateParticle(particle);
+        }, duration * 1000);
+      }, delay * 1000);
+    };
+
+    for (let i = 0; i < particleCount; i++) {
+      createParticle();
+    }
+
+    const handleMouseMove = (e) => {
+      const moveX = (e.clientX / window.innerWidth - 0.5) * 5;
+      const moveY = (e.clientY / window.innerHeight - 0.5) * 5;
+
+      container.querySelectorAll(".gradient-sphere").forEach((sphere) => {
+        sphere.style.transform = `translate(${moveX}px, ${moveY}px)`;
+      });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, []);
+
+  return (
+    <div ref={containerRef} className="gradient-background">
+      <div className="gradient-sphere sphere-1" />
+      <div className="gradient-sphere sphere-2" />
+      <div className="gradient-sphere sphere-3" />
+      <div className="glow" />
+      <div className="grid-overlay" />
+      <div className="noise-overlay" />
+      <div className="particles-container" id="particles-container" />
+    </div>
+  );
+};
+
+
+
+    
     useEffect(() => {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext("2d");
@@ -200,4 +209,4 @@ const ParticlesBackground = () => {
     );
 };
 
-export default ParticlesBackground;
+export default GradientBackground;
