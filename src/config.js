@@ -59,7 +59,7 @@ export default {
             },
         ],
     },
-    techStackPage: {
+    SkillsPage: {
         heading: "Tech Stack",
         list: [
             "Python",
