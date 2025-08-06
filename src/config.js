@@ -18,13 +18,7 @@ export default {
         backgroundDark: "#1e293b",
         sectionLight: "#ffffff",
         sectionDark: "#374151",
-        lineColor: "rgba(128, 0, 128, 0.3)",
-        particleColor: "rgba(128, 0, 128, 0.8)",
-        strokeStyle: `rgba(128, 0, 128, `,
         shadowColor: "rgba(128, 0, 128, 0.7)",
-        lineColorDark: "rgba(255, 255, 255, 0.3)",
-        particleColorDark: "rgba(255, 255, 255, 0.8)",
-        strokeStyleDark: `rgba(255, 255, 255, `,
         shadowColorDark: "rgba(255, 255, 255, 0.7)",
     },
     openGraph: {
