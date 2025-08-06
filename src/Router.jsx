@@ -8,7 +8,7 @@ import RootLayout from "./rootlayout";
 import Home from "./pages/home";
 import Experience from "./pages/experience";
 import Projects from "./pages/projects";
-import TechStack from "./pages/techStack";
+import Skills from "./pages/Skills";
 import Contact from "./pages/contact";
 import NotFound from "./pages/not-found";
 
@@ -32,8 +32,8 @@ const projectsRoute = createRoute({
     getParentRoute: () => rootRoute,
     component: Projects,
 });
-const techStackRoute = createRoute({
-    path: "/techStack",
+const skillsRoute = createRoute({
+    path: "/Skills",
     getParentRoute: () => rootRoute,
     component: TechStack,
 });
