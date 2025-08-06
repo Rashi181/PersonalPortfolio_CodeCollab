@@ -2,36 +2,36 @@ import { useEffect, useRef, useState } from "react";
 import config from "../config";
 
 const ParticlesBackground = () => {
-    const canvasRef = useRef(null);
-    const animationFrameId = useRef(null);
-    const particles = useRef([]);
-    const mouse = useRef({ x: null, y: null, radius: 150 });
-
-    const [themeMode, setThemeMode] = useState(() =>
+const PARTICLE_COUNT = 80;
+const [themeMode, setThemeMode] = useState(() =>
         document.documentElement.classList.contains("dark") ? "dark" : "light"
     );
-
-    const getParticleConfig = (mode) => ({
-        particleCount: 30,
-        maxVelocity: 0.2,
-        connectionDistance: 100,
-        particleRadius: 3,
-        lineColor:
-            mode === "dark"
-                ? "rgba(255, 255, 255, 0.8)" // White in dark mode
-                : "rgba(126, 34, 206, 0.6)", // Purple in light mode
-        particleColor:
-            mode === "dark"
-                ? "rgba(255, 255, 255, 0.8)" // White in dark mode
-                : "rgba(126, 34, 206, 0.6)", // Purple in light mode
-        strokeStyle:
-            mode === "dark"
-                ? config.theme.strokeStyleDark
-                : config.theme.strokeStyle,
-        shadowColor:
-            mode === "dark"
-                ? config.theme.shadowColorDark
-                : config.theme.shadowColor,
+const getParticleConfig = (mode) => ({
+    sphere1Gradient:
+    mode === "dark"
+      ? "linear-gradient(40deg, rgba(255, 0, 128, 0.8), rgba(255, 102, 0, 0.4))"
+      : "linear-gradient(40deg, rgba(126, 34, 206, 0.6), rgba(126, 34, 206, 0.3))",
+  sphere2Gradient:
+    mode === "dark"
+      ? "linear-gradient(240deg, rgba(72, 0, 255, 0.8), rgba(0, 183, 255, 0.4))"
+      : "linear-gradient(240deg, rgba(126, 34, 206, 0.6), rgba(126, 34, 206, 0.3))",
+  sphere3Gradient:
+    mode === "dark"
+      ? "linear-gradient(120deg, rgba(133, 89, 255, 0.5), rgba(98, 216, 249, 0.3))"
+      : "linear-gradient(120deg, rgba(126, 34, 206, 0.6), rgba(126, 34, 206, 0.3))",
+  noiseOpacity:
+    mode === "dark" ? 0.05 : 0.02,
+  gridOpacity:
+    mode === "dark" ? 0.03 : 0.01,
+  glowGradient:
+    mode === "dark"
+      ? "radial-gradient(circle, rgba(72, 0, 255, 0.15), transparent 70%)"
+      : "radial-gradient(circle, rgba(126, 34, 206, 0.1), transparent 70%)",
+    
+    shadowColor:
+        mode === "dark"
+            ? config.theme.shadowColorDark
+            : config.theme.shadowColor,
         backgroundColor:
             mode === "dark"
                 ? config.theme.sectionDark
@@ -64,92 +64,83 @@ const ParticlesBackground = () => {
         return () => observer.disconnect();
     }, [themeMode]);
 
-    const initParticles = (width, height) => {
-        particles.current = [];
-        for (let i = 0; i < particleConfigRef.current.particleCount; i++) {
-            particles.current.push({
-                x: Math.random() * width,
-                y: Math.random() * height,
-                vx: (Math.random() - 0.5) * particleConfigRef.current.maxVelocity,
-                vy: (Math.random() - 0.5) * particleConfigRef.current.maxVelocity,
-                radius: particleConfig.particleRadius,
-            });
-        }
-    };
+    
+function randomRange(min, max) {
+  return Math.random() * (max - min) + min;
+}
+function Particle({ id }) {
+  const [style, setStyle] = useState({
+    width: '2px',
+    height: '2px',
+    left: '0%',
+    top: '0%',
+    opacity: 0,
+    transition: 'none',
+  });
 
-    const draw = (ctx, width, height) => {
-        ctx.clearRect(0, 0, width, height);
+  useEffect(() => {
+    let animationTimeout, delayTimeout;
 
-        for (let i = 0; i < particles.current.length; i++) {
-            for (let j = i + 1; j < particles.current.length; j++) {
-                const dx = particles.current[i].x - particles.current[j].x;
-                const dy = particles.current[i].y - particles.current[j].y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
+    function resetAndAnimate() {
+      // Reset position and opacity immediately (no transition)
+      const posX = randomRange(0, 100);
+      const posY = randomRange(0, 100);
+      const size = randomRange(1, 4);
+      const opacity = 0;
 
-                if (dist < particleConfigRef.current.connectionDistance) {
-                    const alpha = 1 - dist / particleConfigRef.current.connectionDistance;
-                    ctx.strokeStyle =
-                        (themeMode === "dark"
-                            ? "rgba(255, 255, 255," + (alpha * 0.8).toString() + ")"
-                            : "rgba(126, 34, 206," + (alpha * 0.5).toString() + ")");
-                    ctx.lineWidth = 1;
-                    ctx.beginPath();
-                    ctx.moveTo(particles.current[i].x, particles.current[i].y);
-                    ctx.lineTo(particles.current[j].x, particles.current[j].y);
-                    ctx.stroke();
-                }
-            }
-        }
+      setStyle({
+        width: `${size}px`,
+        height: `${size}px`,
+        left: `${posX}%`,
+        top: `${posY}%`,
+        opacity,
+        transition: 'none',
+      });
 
-        particles.current.forEach((p) => {
-            ctx.beginPath();
-            ctx.fillStyle = particleConfigRef.current.particleColor;
-            ctx.shadowColor = particleConfigRef.current.shadowColor;
-            ctx.shadowBlur = 5;
-            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-            ctx.fill();
+      // Start animation after random delay
+      delayTimeout = setTimeout(() => {
+        const duration = randomRange(10, 20); // seconds
+        const newOpacity = randomRange(0.1, 0.4);
 
-            p.x += p.vx;
-            p.y += p.vy;
+        // New positions: slight movement, mostly upward
+        const moveX = posX + randomRange(-10, 10);
+        const moveY = posY - randomRange(0, 30);
 
-            if (p.x <= p.radius || p.x >= width - p.radius) p.vx = -p.vx;
-            if (p.y <= p.radius || p.y >= height - p.radius) p.vy = -p.vy;
-
-            if (mouse.current.x && mouse.current.y) {
-                const dx = p.x - mouse.current.x;
-                const dy = p.y - mouse.current.y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-
-                if (dist < mouse.current.radius) {
-                    const angle = Math.atan2(dy, dx);
-                    const force =
-                        (mouse.current.radius - dist) / mouse.current.radius;
-                    p.vx += Math.cos(angle) * force * 0.3;
-                    p.vy += Math.sin(angle) * force * 0.3;
-
-                    p.vx = Math.min(
-                        Math.max(p.vx, -particleConfigRef.current.maxVelocity * 2),
-                        particleConfigRef.current.maxVelocity * 2
-                    );
-                    p.vy = Math.min(
-                        Math.max(p.vy, -particleConfigRef.current.maxVelocity * 2),
-                        particleConfigRef.current.maxVelocity * 2
-                    );
-                }
-            }
+        setStyle({
+          width: `${size}px`,
+          height: `${size}px`,
+          left: `${moveX}%`,
+          top: `${moveY}%`,
+          opacity: newOpacity,
+          transition: `all ${duration}s linear`,
         });
-    };
 
-    const animate = (ctx, width, height) => {
-        draw(ctx, width, height);
-        animationFrameId.current = requestAnimationFrame(() =>
-            animate(ctx, width, height)
-        );
-    };
+        // When animation ends, reset and animate again
+        animationTimeout = setTimeout(() => {
+          resetAndAnimate();
+        }, duration * 1000);
+      }, randomRange(0, 5000)); // delay max 5 seconds
+    }
 
-    useEffect(() => {
+    resetAndAnimate();
+
+    return () => {
+      clearTimeout(animationTimeout);
+      clearTimeout(delayTimeout);
+    };
+  }, []);
+
+  return (
+    <div
+      key={id}
+      className="absolute rounded-full bg-white"
+      style={style}
+
+    />
+  );
+useEffect(() => {
         const canvas = canvasRef.current;
-        const ctx = canvas.getContext("2d");
+       
 
         const resizeCanvas = () => {
             canvas.width = window.innerWidth;
@@ -200,4 +191,8 @@ const ParticlesBackground = () => {
     );
 };
 
+
+    
+    
+    
 export default ParticlesBackground;
