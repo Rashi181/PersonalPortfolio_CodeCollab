@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import config from "../config";
-import "./ParticlesBackground.css";
+
 
 const PARTICLE_COUNT = 80;
 
