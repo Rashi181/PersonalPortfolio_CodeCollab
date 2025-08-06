@@ -2,7 +2,7 @@ import { SectionHeading } from "../templates/basicUIComponents";
 import config from "../config";
 
 
-function TechStack() {
+function Skills() {
     return (
         <div className="relative flex-grow flex items-center justify-center text-center px-6">
             <div className="p-8 space-y-6 text-center justify-center items-center flex-grow align-middle">
@@ -19,7 +19,7 @@ function TechStack() {
                         </h1>
                     </div>
 
-                {/* Tech Stack Pills */}
+                
                 <div className="flex flex-wrap justify-center gap-3 mt-4">
                     {config.techStackPage.list.map((tech, index) => (
                         <div
@@ -42,4 +42,4 @@ function TechStack() {
     );
 }
 
-export default TechStack;
+export default Skills;
